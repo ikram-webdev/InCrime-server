@@ -10,7 +10,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://in-crime.vercel.app/',
+  origin: process.env.CLIENT_URL || 'https://in-crime.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
