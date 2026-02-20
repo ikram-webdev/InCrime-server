@@ -5,20 +5,24 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-// Connect to MongoDB
+// 1. Connect to MongoDB (Error handling ke saath)
 connectDB();
 
-// Middleware
+// 2. Middleware - CORS Fix
+// CLIENT_URL mein https://in-crime.vercel.app/login nahi sirf domain hona chahiye
+const allowedOrigin = process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/$/, "") : 'https://in-crime.vercel.app';
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://in-crime.vercel.app',
+  origin: allowedOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Request logger (development)
+// Request logger
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`);
@@ -56,13 +60,14 @@ app.use((err, req, res, next) => {
 
 // ===================== SEED ADMIN & DATA =====================
 const seedData = async () => {
-  const User = require('./models/User');
-  const Category = require('./models/Category');
-
   try {
-    // Create admin if not exists
+    const User = require('./models/User');
+    const Category = require('./models/Category');
+
     const adminExists = await User.findOne({ role: 'admin' });
     if (!adminExists) {
+      // Password hashing check: Agar aapka User model password automatically hash nahi karta, 
+      // toh yahan bcrypt use karna parega.
       await User.create({
         fullName: 'InCrime Admin',
         username: 'admin',
@@ -70,10 +75,9 @@ const seedData = async () => {
         password: process.env.ADMIN_PASSWORD || 'Admin@123456',
         role: 'admin',
       });
-      console.log('✅ Admin user created: admin / Admin@123456');
+      console.log('✅ Admin user created');
     }
 
-    // Seed default categories
     const catCount = await Category.countDocuments();
     if (catCount === 0) {
       await Category.insertMany([
@@ -87,11 +91,11 @@ const seedData = async () => {
   }
 };
 
+// 3. Render Dynamic Port Fix
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`\n🚀 InCrime Server running on port ${PORT}`);
-  console.log(`📡 API: http://localhost:${PORT}/api`);
-  console.log(`🌐 Client: ${process.env.CLIENT_URL}\n`);
+  // Database seed tabhi karein jab DB connect ho jaye
   await seedData();
 });
 
