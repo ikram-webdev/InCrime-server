@@ -1,0 +1,19 @@
+# Sensitive files (Ye GitHub par nahi jayengi)
+.env
+.env.local
+
+# Dependency folders
+node_modules/
+
+# Build folders
+dist/
+build/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System files
+.DS_Store
+Thumbs.db
